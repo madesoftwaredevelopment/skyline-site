@@ -1,60 +1,154 @@
 (() => {
-  const stage = document.getElementById("hero-stage");
-  const phone = document.getElementById("hero-phone-wrap");
-  const glowPrimary = document.getElementById("hero-glow-primary");
-  const glowSecondary = document.getElementById("hero-glow-secondary");
+  const scrubSection = document.getElementById("scrub-section");
+  const video = document.getElementById("hero-demo-video");
+  const progressFill = document.getElementById("scrub-progress-fill");
+  const fallbackCopy = document.getElementById("video-fallback-copy");
 
-  if (!stage || !phone || !glowPrimary || !glowSecondary) {
-    console.warn("Hero parallax: missing required elements.");
+  if (!scrubSection || !video || !progressFill || !fallbackCopy) {
+    console.warn("SkyLine Golf hero scrub: missing required elements.");
     return;
   }
 
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (prefersReducedMotion) {
+    fallbackCopy.classList.add("is-hidden");
+    progressFill.style.width = "100%";
     return;
   }
+
+  let duration = 0;
+  let metadataReady = false;
+  let ticking = false;
+  let pendingSeek = false;
+  let targetTime = 0;
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-  let ticking = false;
-
-  const updateParallax = () => {
-    const rect = stage.getBoundingClientRect();
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-    const viewportCenter = viewportHeight / 2;
-    const stageCenter = rect.top + rect.height / 2;
-
-    const distanceFromCenter = (stageCenter - viewportCenter) / viewportHeight;
-    const normalized = clamp(distanceFromCenter, -1, 1);
-
-    // 0 at far top/bottom, 1 at viewport center
-    const closeness = 1 - Math.abs(normalized);
-
-    // Stronger reveal:
-    // starts ~20% smaller, grows to current-ish max, then shrinks again
-    const phoneScale = 0.80 + closeness * 0.26;          // 0.80 -> 1.06
-    const glowPrimaryScale = 0.78 + closeness * 0.30;    // 0.78 -> 1.08
-    const glowSecondaryScale = 0.76 + closeness * 0.34;  // 0.76 -> 1.10
-
-    // Slight vertical motion to stop it feeling static
-    const phoneTranslateY = normalized * 18;
-    const glowPrimaryTranslateY = normalized * 12;
-    const glowSecondaryTranslateY = normalized * 18;
-
-    phone.style.transform = `translate3d(0, ${phoneTranslateY}px, 0) scale(${phoneScale})`;
-    glowPrimary.style.transform = `translate(-50%, calc(-50% + ${glowPrimaryTranslateY}px)) scale(${glowPrimaryScale})`;
-    glowSecondary.style.transform = `translate(-50%, calc(-50% + ${glowSecondaryTranslateY}px)) scale(${glowSecondaryScale})`;
-
-    ticking = false;
+  const remap = (value, inMin, inMax, outMin, outMax) => {
+    if (inMax - inMin === 0) return outMin;
+    const normalized = (value - inMin) / (inMax - inMin);
+    return outMin + (outMax - outMin) * normalized;
   };
 
-  const requestUpdate = () => {
+  const easeInOut = (t) => {
+    return t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  };
+
+  const safeSeek = (time) => {
+    if (!metadataReady || !Number.isFinite(duration) || duration <= 0) {
+      return;
+    }
+
+    const clampedTime = clamp(time, 0, Math.max(duration - 0.001, 0));
+
+    if (Math.abs(video.currentTime - clampedTime) < 0.016) {
+      return;
+    }
+
+    if (pendingSeek) {
+      targetTime = clampedTime;
+      return;
+    }
+
+    try {
+      pendingSeek = true;
+      video.currentTime = clampedTime;
+    } catch (error) {
+      pendingSeek = false;
+      console.warn("SkyLine Golf hero scrub: seek failed.", error);
+    }
+  };
+
+  const updateFromScroll = () => {
+    ticking = false;
+
+    if (!metadataReady || duration <= 0) {
+      return;
+    }
+
+    const rect = scrubSection.getBoundingClientRect();
+    const totalScrollable = Math.max(scrubSection.offsetHeight - window.innerHeight, 1);
+    const scrolled = clamp(-rect.top, 0, totalScrollable);
+    const rawProgress = clamp(scrolled / totalScrollable, 0, 1);
+
+    /*
+      Shaped progress:
+      - first 8% holds near start
+      - middle 80% scrubs
+      - last 12% settles near end
+    */
+    const scrubStart = 0.08;
+    const scrubEnd = 0.88;
+
+    let shapedProgress = 0;
+
+    if (rawProgress <= scrubStart) {
+      shapedProgress = 0;
+    } else if (rawProgress >= scrubEnd) {
+      shapedProgress = 1;
+    } else {
+      const inner = remap(rawProgress, scrubStart, scrubEnd, 0, 1);
+      shapedProgress = easeInOut(inner);
+    }
+
+    targetTime = shapedProgress * duration;
+    safeSeek(targetTime);
+    progressFill.style.width = `${(shapedProgress * 100).toFixed(2)}%`;
+  };
+
+  const requestScrollUpdate = () => {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(updateParallax);
+    requestAnimationFrame(updateFromScroll);
   };
 
-  updateParallax();
+  const onLoadedMetadata = () => {
+    duration = Number.isFinite(video.duration) ? video.duration : 0;
+    metadataReady = duration > 0;
 
-  window.addEventListener("scroll", requestUpdate, { passive: true });
-  window.addEventListener("resize", requestUpdate);
+    if (!metadataReady) {
+      console.warn("SkyLine Golf hero scrub: video metadata did not produce a valid duration.");
+      return;
+    }
+
+    fallbackCopy.classList.add("is-hidden");
+    video.pause();
+    video.muted = true;
+    requestScrollUpdate();
+  };
+
+  video.addEventListener("loadedmetadata", onLoadedMetadata);
+
+  video.addEventListener("seeked", () => {
+    pendingSeek = false;
+
+    if (Math.abs(video.currentTime - targetTime) > 0.033) {
+      safeSeek(targetTime);
+    }
+  });
+
+  video.addEventListener("error", () => {
+    fallbackCopy.textContent = "Demo unavailable";
+    console.warn("SkyLine Golf hero scrub: video failed to load.");
+  });
+
+  // Try to prime the video for iOS/Safari seeking behavior.
+  video.muted = true;
+  video.playsInline = true;
+
+  const playPromise = video.play();
+  if (playPromise && typeof playPromise.then === "function") {
+    playPromise
+      .then(() => video.pause())
+      .catch(() => {
+        /* Fine. Some browsers block this, but scrubbing can still work. */
+      });
+  }
+
+  requestScrollUpdate();
+  window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+  window.addEventListener("resize", requestScrollUpdate);
 })();
