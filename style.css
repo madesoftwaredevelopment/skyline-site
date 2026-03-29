@@ -189,7 +189,7 @@ a {
 
 .eyebrow,
 .section-label,
-.hero-side-label {
+.hero-message-kicker {
   margin: 0 0 12px;
   color: var(--accent);
   font-size: 0.84rem;
@@ -233,25 +233,58 @@ a {
   position: relative;
   min-height: 72vh;
   display: grid;
-  grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+  grid-template-columns: minmax(280px, 460px) minmax(0, 1fr);
   align-items: center;
-  gap: 42px;
+  gap: 48px;
 }
 
 .hero-copy-side {
   align-self: center;
-  max-width: 280px;
-  opacity: 0.9;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
 }
 
-.hero-side-label {
-  margin-bottom: 10px;
+.hero-copy-stack {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
 }
 
-.hero-side-copy {
+.hero-message {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+  pointer-events: none;
+}
+
+.hero-message.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-message-title {
+  margin: 0 0 14px;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  font-weight: 800;
+  max-width: 12ch;
+}
+
+.hero-message-body {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 1rem;
+  font-size: 1.06rem;
+  max-width: 30ch;
 }
 
 .hero-phone-wrap {
@@ -550,7 +583,15 @@ a {
   }
 
   .hero-copy-side {
-    max-width: 520px;
+    min-height: 280px;
+  }
+
+  .hero-copy-stack {
+    min-height: 260px;
+  }
+
+  .hero-message-title {
+    max-width: 100%;
   }
 
   .hero-phone-wrap {
@@ -597,11 +638,23 @@ a {
   }
 
   .scrub-section {
-    height: 210vh;
+    height: 240vh;
   }
 
   .hero-stage {
     min-height: 64vh;
+  }
+
+  .hero-copy-side {
+    min-height: 240px;
+  }
+
+  .hero-copy-stack {
+    min-height: 220px;
+  }
+
+  .hero-message-title {
+    font-size: clamp(1.9rem, 7vw, 3rem);
   }
 
   .hero-phone-wrap {
@@ -654,15 +707,24 @@ a {
   }
 
   .scrub-section {
-    height: 190vh;
+    height: 220vh;
   }
 
   .hero-copy-side {
-    max-width: none;
+    min-height: 220px;
   }
 
-  .hero-side-copy {
-    font-size: 0.95rem;
+  .hero-copy-stack {
+    min-height: 210px;
+  }
+
+  .hero-message-title {
+    font-size: clamp(1.7rem, 9vw, 2.4rem);
+  }
+
+  .hero-message-body {
+    font-size: 0.98rem;
+    max-width: 100%;
   }
 
   .hero-glow-primary {
@@ -696,5 +758,17 @@ a {
 
   .scrub-progress {
     display: none;
+  }
+
+  .hero-message {
+    position: relative;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    margin-bottom: 18px;
+  }
+
+  .hero-copy-stack {
+    min-height: unset;
   }
 }
