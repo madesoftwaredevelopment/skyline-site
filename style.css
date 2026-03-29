@@ -115,14 +115,12 @@ a {
   gap: 12px;
 }
 
-.brand-mark {
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #a1ebff 0%, #63a7ff 100%);
-  box-shadow:
-    0 0 0 6px rgba(255, 255, 255, 0.03),
-    0 0 34px rgba(135, 220, 255, 0.34);
+.brand-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
 }
 
 .brand-text {
