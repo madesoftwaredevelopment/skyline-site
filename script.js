@@ -1,96 +1,74 @@
 (() => {
   const stage = document.getElementById("hero-stage");
+  const phone = document.getElementById("hero-phone-wrap");
+  const glowPrimary = document.getElementById("hero-glow-primary");
+  const glowSecondary = document.getElementById("hero-glow-secondary");
 
-  if (!stage) {
+  if (!stage || !phone || !glowPrimary || !glowSecondary) {
     return;
   }
 
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (prefersReducedMotion) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return;
   }
 
-  const layers = Array.from(stage.querySelectorAll("[data-depth]"));
   let currentX = 0;
   let currentY = 0;
   let targetX = 0;
   let targetY = 0;
-  let rafId = null;
+  let ticking = false;
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-  const updateTargets = (clientX, clientY) => {
-    const rect = stage.getBoundingClientRect();
-    const relativeX = (clientX - rect.left) / rect.width;
-    const relativeY = (clientY - rect.top) / rect.height;
-
-    targetX = clamp((relativeX - 0.5) * 2, -1, 1);
-    targetY = clamp((relativeY - 0.5) * 2, -1, 1);
-
-    if (rafId === null) {
-      rafId = requestAnimationFrame(animate);
-    }
-  };
-
   const animate = () => {
-    currentX += (targetX - currentX) * 0.08;
-    currentY += (targetY - currentY) * 0.08;
+    currentX += (targetX - currentX) * 0.14;
+    currentY += (targetY - currentY) * 0.14;
 
-    layers.forEach((layer) => {
-      const depth = Number(layer.dataset.depth || 0);
-      const moveX = currentX * depth;
-      const moveY = currentY * depth;
+    const phoneMoveX = currentX * 18;
+    const phoneMoveY = currentY * 14;
+    const phoneRotateY = currentX * 5;
+    const phoneRotateX = currentY * -4;
 
-      if (layer.classList.contains("hero-phone-wrap")) {
-        const rotateY = currentX * 2.2;
-        const rotateX = currentY * -1.4;
+    phone.style.transform = `
+      translate3d(${phoneMoveX}px, ${phoneMoveY}px, 0)
+      rotateX(${phoneRotateX}deg)
+      rotateY(${phoneRotateY}deg)
+    `;
 
-        layer.style.transform =
-          `translate3d(${moveX}px, ${moveY}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-      } else {
-        layer.style.transform =
-          `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
-      }
-    });
+    glowPrimary.style.transform = `translate(calc(-50% + ${currentX * 10}px), calc(-50% + ${currentY * 8}px))`;
+    glowSecondary.style.transform = `translate(calc(-50% + ${currentX * 16}px), calc(-50% + ${currentY * 12}px))`;
 
-    const settled =
-      Math.abs(targetX - currentX) < 0.001 &&
-      Math.abs(targetY - currentY) < 0.001;
+    const stillMoving =
+      Math.abs(targetX - currentX) > 0.001 ||
+      Math.abs(targetY - currentY) > 0.001;
 
-    if (settled) {
-      rafId = null;
-      return;
+    if (stillMoving) {
+      requestAnimationFrame(animate);
+    } else {
+      ticking = false;
     }
-
-    rafId = requestAnimationFrame(animate);
   };
 
-  const reset = () => {
-    targetX = 0;
-    targetY = 0;
-
-    if (rafId === null) {
-      rafId = requestAnimationFrame(animate);
+  const start = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(animate);
     }
   };
 
   stage.addEventListener("pointermove", (event) => {
-    updateTargets(event.clientX, event.clientY);
+    const rect = stage.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+
+    targetX = clamp(x, -1, 1);
+    targetY = clamp(y, -1, 1);
+    start();
   });
 
-  stage.addEventListener("pointerleave", reset);
-  stage.addEventListener("pointercancel", reset);
-
-  window.addEventListener("deviceorientation", (event) => {
-    if (typeof event.gamma !== "number" || typeof event.beta !== "number") {
-      return;
-    }
-
-    targetX = clamp(event.gamma / 18, -1, 1);
-    targetY = clamp(event.beta / 30, -1, 1);
-
-    if (rafId === null) {
-      rafId = requestAnimationFrame(animate);
-    }
-  }, { passive: true });
+  stage.addEventListener("pointerleave", () => {
+    targetX = 0;
+    targetY = 0;
+    start();
+  });
 })();
