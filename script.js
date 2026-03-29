@@ -26,13 +26,17 @@
     const distanceFromCenter = (stageCenter - viewportCenter) / viewportHeight;
     const normalized = clamp(distanceFromCenter, -1, 1);
 
+    // 0 at far top/bottom, 1 at viewport center
     const closeness = 1 - Math.abs(normalized);
 
-    const phoneScale = 0.9 + closeness * 0.16;
-    const glowPrimaryScale = 0.9 + closeness * 0.2;
-    const glowSecondaryScale = 0.88 + closeness * 0.24;
+    // Stronger reveal:
+    // starts ~20% smaller, grows to current-ish max, then shrinks again
+    const phoneScale = 0.80 + closeness * 0.26;          // 0.80 -> 1.06
+    const glowPrimaryScale = 0.78 + closeness * 0.30;    // 0.78 -> 1.08
+    const glowSecondaryScale = 0.76 + closeness * 0.34;  // 0.76 -> 1.10
 
-    const phoneTranslateY = normalized * 20;
+    // Slight vertical motion to stop it feeling static
+    const phoneTranslateY = normalized * 18;
     const glowPrimaryTranslateY = normalized * 12;
     const glowSecondaryTranslateY = normalized * 18;
 
@@ -44,10 +48,7 @@
   };
 
   const requestUpdate = () => {
-    if (ticking) {
-      return;
-    }
-
+    if (ticking) return;
     ticking = true;
     requestAnimationFrame(updateParallax);
   };
