@@ -12,51 +12,49 @@
     return;
   }
 
-  let ticking = false;
-  let currentPhoneY = 0;
-  let currentGlowPrimaryY = 0;
-  let currentGlowSecondaryY = 0;
-
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-  const updateParallax = () => {
+  const updateHeroParallax = () => {
     const rect = stage.getBoundingClientRect();
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const viewportCenter = viewportHeight / 2;
+    const stageCenter = rect.top + rect.height / 2;
 
-    const progress = clamp((viewportHeight - rect.top) / (viewportHeight + rect.height), 0, 1);
-    const centered = (progress - 0.5) * 2;
+    const distanceFromCenter = (stageCenter - viewportCenter) / viewportHeight;
+    const normalized = clamp(distanceFromCenter, -1, 1);
 
-    const targetPhoneY = centered * -54;
-    const targetGlowPrimaryY = centered * -24;
-    const targetGlowSecondaryY = centered * -38;
+    const closeness = 1 - Math.abs(normalized);
 
-    currentPhoneY += (targetPhoneY - currentPhoneY) * 0.12;
-    currentGlowPrimaryY += (targetGlowPrimaryY - currentGlowPrimaryY) * 0.12;
-    currentGlowSecondaryY += (targetGlowSecondaryY - currentGlowSecondaryY) * 0.12;
+    const phoneScale = 0.92 + closeness * 0.12;
+    const glowPrimaryScale = 0.9 + closeness * 0.18;
+    const glowSecondaryScale = 0.88 + closeness * 0.22;
 
-    phone.style.transform = `translate3d(0, ${currentPhoneY}px, 0)`;
-    glowPrimary.style.transform = `translate(-50%, calc(-50% + ${currentGlowPrimaryY}px))`;
-    glowSecondary.style.transform = `translate(-50%, calc(-50% + ${currentGlowSecondaryY}px))`;
+    const phoneTranslateY = normalized * 18;
+    const glowPrimaryTranslateY = normalized * 10;
+    const glowSecondaryTranslateY = normalized * 16;
 
-    const phoneSettled = Math.abs(targetPhoneY - currentPhoneY) < 0.1;
-    const glow1Settled = Math.abs(targetGlowPrimaryY - currentGlowPrimaryY) < 0.1;
-    const glow2Settled = Math.abs(targetGlowSecondaryY - currentGlowSecondaryY) < 0.1;
-
-    if (!(phoneSettled && glow1Settled && glow2Settled)) {
-      requestAnimationFrame(updateParallax);
-    } else {
-      ticking = false;
-    }
+    phone.style.transform = `translate3d(0, ${phoneTranslateY}px, 0) scale(${phoneScale})`;
+    glowPrimary.style.transform = `translate(-50%, calc(-50% + ${glowPrimaryTranslateY}px)) scale(${glowPrimaryScale})`;
+    glowSecondary.style.transform = `translate(-50%, calc(-50% + ${glowSecondaryTranslateY}px)) scale(${glowSecondaryScale})`;
   };
+
+  let ticking = false;
 
   const requestUpdate = () => {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(updateParallax);
+    if (ticking) {
+      return;
     }
+
+    ticking = true;
+
+    requestAnimationFrame(() => {
+      updateHeroParallax();
+      ticking = false;
+    });
   };
 
-  requestUpdate();
+  updateHeroParallax();
+
   window.addEventListener("scroll", requestUpdate, { passive: true });
   window.addEventListener("resize", requestUpdate);
 })();
