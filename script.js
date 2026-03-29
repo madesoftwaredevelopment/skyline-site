@@ -3,8 +3,9 @@
   const video = document.getElementById("hero-demo-video");
   const progressFill = document.getElementById("scrub-progress-fill");
   const fallbackCopy = document.getElementById("video-fallback-copy");
+  const heroMessages = Array.from(document.querySelectorAll(".hero-message"));
 
-  if (!scrubSection || !video || !progressFill || !fallbackCopy) {
+  if (!scrubSection || !video || !progressFill || !fallbackCopy || heroMessages.length === 0) {
     console.warn("SkyLine Golf hero scrub: missing required elements.");
     return;
   }
@@ -14,6 +15,7 @@
   if (prefersReducedMotion) {
     fallbackCopy.classList.add("is-hidden");
     progressFill.style.width = "100%";
+    heroMessages.forEach((message) => message.classList.add("is-active"));
     return;
   }
 
@@ -22,6 +24,7 @@
   let ticking = false;
   let pendingSeek = false;
   let targetTime = 0;
+  let activeMessageIndex = 0;
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -35,6 +38,15 @@
     return t < 0.5
       ? 4 * t * t * t
       : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  };
+
+  const setActiveMessage = (index) => {
+    const safeIndex = clamp(index, 0, heroMessages.length - 1);
+    if (safeIndex === activeMessageIndex) return;
+
+    heroMessages[activeMessageIndex]?.classList.remove("is-active");
+    heroMessages[safeIndex]?.classList.add("is-active");
+    activeMessageIndex = safeIndex;
   };
 
   const safeSeek = (time) => {
@@ -65,10 +77,6 @@
   const updateFromScroll = () => {
     ticking = false;
 
-    if (!metadataReady || duration <= 0) {
-      return;
-    }
-
     const rect = scrubSection.getBoundingClientRect();
     const totalScrollable = Math.max(scrubSection.offsetHeight - window.innerHeight, 1);
     const scrolled = clamp(-rect.top, 0, totalScrollable);
@@ -76,11 +84,11 @@
 
     /*
       Shaped progress:
-      - first 8% holds near start
-      - middle 80% scrubs
+      - first 6% holds near start
+      - middle 82% scrubs
       - last 12% settles near end
     */
-    const scrubStart = 0.08;
+    const scrubStart = 0.06;
     const scrubEnd = 0.88;
 
     let shapedProgress = 0;
@@ -94,9 +102,19 @@
       shapedProgress = easeInOut(inner);
     }
 
-    targetTime = shapedProgress * duration;
-    safeSeek(targetTime);
+    if (metadataReady && duration > 0) {
+      targetTime = shapedProgress * duration;
+      safeSeek(targetTime);
+    }
+
     progressFill.style.width = `${(shapedProgress * 100).toFixed(2)}%`;
+
+    const messageZoneProgress = clamp(remap(rawProgress, 0.02, 0.92, 0, 1), 0, 1);
+    const messageIndex = Math.min(
+      heroMessages.length - 1,
+      Math.floor(messageZoneProgress * heroMessages.length)
+    );
+    setActiveMessage(messageIndex);
   };
 
   const requestScrollUpdate = () => {
@@ -135,7 +153,6 @@
     console.warn("SkyLine Golf hero scrub: video failed to load.");
   });
 
-  // Try to prime the video for iOS/Safari seeking behavior.
   video.muted = true;
   video.playsInline = true;
 
@@ -144,11 +161,13 @@
     playPromise
       .then(() => video.pause())
       .catch(() => {
-        /* Fine. Some browsers block this, but scrubbing can still work. */
+        /* Some browsers block this. Fine. */
       });
   }
 
+  heroMessages[0].classList.add("is-active");
   requestScrollUpdate();
+
   window.addEventListener("scroll", requestScrollUpdate, { passive: true });
   window.addEventListener("resize", requestScrollUpdate);
 })();
