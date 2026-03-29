@@ -201,14 +201,12 @@ a {
   align-items: center;
   justify-content: center;
   overflow: visible;
-  perspective: 1200px;
 }
 
 .hero-phone-wrap {
   position: relative;
   z-index: 3;
   width: min(100%, 760px);
-  transform-style: preserve-3d;
   will-change: transform;
 }
 
