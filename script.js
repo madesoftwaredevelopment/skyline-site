@@ -26,9 +26,9 @@
     const progress = clamp((viewportHeight - rect.top) / (viewportHeight + rect.height), 0, 1);
     const centered = (progress - 0.5) * 2;
 
-    const targetPhoneY = centered * -36;
-    const targetGlowPrimaryY = centered * -18;
-    const targetGlowSecondaryY = centered * -28;
+    const targetPhoneY = centered * -54;
+    const targetGlowPrimaryY = centered * -24;
+    const targetGlowSecondaryY = centered * -38;
 
     currentPhoneY += (targetPhoneY - currentPhoneY) * 0.12;
     currentGlowPrimaryY += (targetGlowPrimaryY - currentGlowPrimaryY) * 0.12;
