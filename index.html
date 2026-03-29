@@ -17,7 +17,7 @@
     content="An upcoming iPhone app built to capture, trace, and review golf shots."
   />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="assets/coming-soon-hero.png" />
+  <meta property="og:image" content="assets/hero-poster.jpg" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SkyLine Golf" />
@@ -25,7 +25,7 @@
     name="twitter:description"
     content="An upcoming iPhone app built to capture, trace, and review golf shots."
   />
-  <meta name="twitter:image" content="assets/coming-soon-hero.png" />
+  <meta name="twitter:image" content="assets/hero-poster.jpg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,7 +63,7 @@
     </header>
 
     <main>
-      <section class="hero-intro">
+      <section class="hero-intro" aria-label="SkyLine Golf introduction">
         <p class="eyebrow">Coming soon</p>
         <h1>
           Golf shot tracing,
@@ -71,26 +71,57 @@
         </h1>
       </section>
 
-      <section class="hero-section" aria-label="SkyLine Golf hero">
-        <div class="hero-stage" id="hero-stage">
-          <div
-            class="hero-glow hero-glow-primary"
-            id="hero-glow-primary"
-            aria-hidden="true"
-          ></div>
+      <section
+        class="scrub-section"
+        id="scrub-section"
+        aria-label="SkyLine Golf shot demo"
+      >
+        <div class="scrub-sticky">
+          <div class="hero-stage">
+            <div class="hero-copy-side">
+              <p class="hero-side-label">Scroll to preview</p>
+              <p class="hero-side-copy">
+                Move through the shot and watch the tracer build inside the app.
+              </p>
+            </div>
 
-          <div
-            class="hero-glow hero-glow-secondary"
-            id="hero-glow-secondary"
-            aria-hidden="true"
-          ></div>
+            <div class="hero-phone-wrap" id="hero-phone-wrap">
+              <div class="hero-glow hero-glow-primary" aria-hidden="true"></div>
+              <div class="hero-glow hero-glow-secondary" aria-hidden="true"></div>
 
-          <div class="hero-phone-wrap" id="hero-phone-wrap">
-            <img
-              src="assets/coming-soon-hero.png"
-              alt="SkyLine Golf promotional preview showing the app interface and golf shot tracer"
-              class="hero-phone-image"
-            />
+              <div class="phone-composite">
+                <div class="phone-screen-window">
+                  <video
+                    id="hero-demo-video"
+                    class="hero-demo-video"
+                    muted
+                    playsinline
+                    preload="auto"
+                    poster="assets/hero-poster.jpg"
+                    aria-label="SkyLine Golf demo shot"
+                  >
+                    <source src="assets/Hero-Shot.mov" type="video/quicktime" />
+                  </video>
+
+                  <div class="video-fallback-copy" id="video-fallback-copy">
+                    Demo loading…
+                  </div>
+                </div>
+
+                <img
+                  src="assets/iphone-frame-overlay.png"
+                  alt=""
+                  class="phone-frame-overlay"
+                  aria-hidden="true"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="scrub-progress" aria-hidden="true">
+            <div class="scrub-progress-track">
+              <div class="scrub-progress-fill" id="scrub-progress-fill"></div>
+            </div>
           </div>
         </div>
       </section>
