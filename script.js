@@ -5,6 +5,7 @@
   const glowSecondary = document.getElementById("hero-glow-secondary");
 
   if (!stage || !phone || !glowPrimary || !glowSecondary) {
+    console.warn("Hero parallax: missing required elements.");
     return;
   }
 
@@ -14,7 +15,9 @@
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-  const updateHeroParallax = () => {
+  let ticking = false;
+
+  const updateParallax = () => {
     const rect = stage.getBoundingClientRect();
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
     const viewportCenter = viewportHeight / 2;
@@ -25,20 +28,20 @@
 
     const closeness = 1 - Math.abs(normalized);
 
-    const phoneScale = 0.92 + closeness * 0.12;
-    const glowPrimaryScale = 0.9 + closeness * 0.18;
-    const glowSecondaryScale = 0.88 + closeness * 0.22;
+    const phoneScale = 0.9 + closeness * 0.16;
+    const glowPrimaryScale = 0.9 + closeness * 0.2;
+    const glowSecondaryScale = 0.88 + closeness * 0.24;
 
-    const phoneTranslateY = normalized * 18;
-    const glowPrimaryTranslateY = normalized * 10;
-    const glowSecondaryTranslateY = normalized * 16;
+    const phoneTranslateY = normalized * 20;
+    const glowPrimaryTranslateY = normalized * 12;
+    const glowSecondaryTranslateY = normalized * 18;
 
     phone.style.transform = `translate3d(0, ${phoneTranslateY}px, 0) scale(${phoneScale})`;
     glowPrimary.style.transform = `translate(-50%, calc(-50% + ${glowPrimaryTranslateY}px)) scale(${glowPrimaryScale})`;
     glowSecondary.style.transform = `translate(-50%, calc(-50% + ${glowSecondaryTranslateY}px)) scale(${glowSecondaryScale})`;
-  };
 
-  let ticking = false;
+    ticking = false;
+  };
 
   const requestUpdate = () => {
     if (ticking) {
@@ -46,14 +49,10 @@
     }
 
     ticking = true;
-
-    requestAnimationFrame(() => {
-      updateHeroParallax();
-      ticking = false;
-    });
+    requestAnimationFrame(updateParallax);
   };
 
-  updateHeroParallax();
+  updateParallax();
 
   window.addEventListener("scroll", requestUpdate, { passive: true });
   window.addEventListener("resize", requestUpdate);
