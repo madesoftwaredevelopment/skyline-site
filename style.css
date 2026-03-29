@@ -16,7 +16,7 @@
   --max-width: 1240px;
   --header-height: 84px;
 
-  --phone-max-width: 470px;
+  --phone-max-width: 430px;
 
   /* Tune these if your screen content sits slightly wrong inside the frame. */
   --screen-inset-top: 3.1%;
@@ -315,7 +315,7 @@ a {
   bottom: var(--screen-inset-bottom);
   left: var(--screen-inset-left);
   overflow: hidden;
-  border-radius: 9.2%;
+  border-radius: 60px;
   background: #000;
 }
 
