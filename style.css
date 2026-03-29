@@ -1,7 +1,5 @@
 :root {
   --bg: #050608;
-  --bg-elevated: rgba(255, 255, 255, 0.06);
-  --bg-elevated-strong: rgba(255, 255, 255, 0.09);
   --border: rgba(255, 255, 255, 0.12);
   --border-strong: rgba(255, 255, 255, 0.18);
 
@@ -10,15 +8,11 @@
   --text-muted: rgba(245, 247, 251, 0.50);
 
   --accent: #87dcff;
-  --accent-strong: #539cff;
 
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   --glass-blur: blur(24px);
 
   --radius-xl: 30px;
-  --radius-lg: 24px;
-  --radius-md: 18px;
-
   --max-width: 1240px;
   --header-height: 84px;
 }
@@ -214,10 +208,8 @@ a {
   position: relative;
   z-index: 3;
   width: min(100%, 760px);
-  transform: translate3d(0, 0, 0);
   transform-style: preserve-3d;
   will-change: transform;
-  transition: transform 220ms ease-out;
 }
 
 .hero-phone-image {
@@ -227,15 +219,15 @@ a {
   filter: drop-shadow(0 36px 90px rgba(0, 0, 0, 0.42));
   user-select: none;
   -webkit-user-drag: none;
+  pointer-events: none;
 }
 
 .hero-glow {
   position: absolute;
   border-radius: 999px;
   pointer-events: none;
-  will-change: transform;
-  transition: transform 280ms ease-out;
   z-index: 1;
+  will-change: transform;
 }
 
 .hero-glow-primary {
@@ -243,9 +235,9 @@ a {
   height: 620px;
   background: radial-gradient(
     circle,
-    rgba(83, 156, 255, 0.20) 0%,
+    rgba(83, 156, 255, 0.22) 0%,
     rgba(83, 156, 255, 0.10) 32%,
-    rgba(83, 156, 255, 0.00) 72%
+    rgba(83, 156, 255, 0) 72%
   );
   filter: blur(36px);
   left: 50%;
@@ -260,7 +252,7 @@ a {
     circle,
     rgba(135, 220, 255, 0.16) 0%,
     rgba(135, 220, 255, 0.06) 34%,
-    rgba(135, 220, 255, 0.00) 74%
+    rgba(135, 220, 255, 0) 74%
   );
   filter: blur(44px);
   left: 53%;
@@ -551,10 +543,5 @@ a {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-
-  .hero-phone-wrap,
-  .hero-glow {
-    transition: none;
   }
 }
