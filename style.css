@@ -19,10 +19,10 @@
   --phone-max-width: 430px;
 
   /* Tune these if your screen content sits slightly wrong inside the frame. */
-  --screen-inset-top: 3.1%;
-  --screen-inset-right: 5.55%;
-  --screen-inset-bottom: 3.25%;
-  --screen-inset-left: 5.55%;
+  --screen-inset-top: 2.2%;
+  --screen-inset-right: 5.35%;
+  --screen-inset-bottom: 2.35%;
+  --screen-inset-left: 5.35%;
 }
 
 *,
