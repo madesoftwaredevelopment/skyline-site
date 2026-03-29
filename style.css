@@ -15,6 +15,14 @@
   --radius-xl: 30px;
   --max-width: 1240px;
   --header-height: 84px;
+
+  --phone-max-width: 470px;
+
+  /* Tune these if your screen content sits slightly wrong inside the frame. */
+  --screen-inset-top: 3.1%;
+  --screen-inset-right: 5.55%;
+  --screen-inset-bottom: 3.25%;
+  --screen-inset-left: 5.55%;
 }
 
 *,
@@ -41,7 +49,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-img {
+img,
+video {
   display: block;
   max-width: 100%;
 }
@@ -179,7 +188,8 @@ a {
 }
 
 .eyebrow,
-.section-label {
+.section-label,
+.hero-side-label {
   margin: 0 0 12px;
   color: var(--accent);
   font-size: 0.84rem;
@@ -204,35 +214,52 @@ a {
   color: transparent;
 }
 
-.hero-section {
-  padding-top: 8px;
+.scrub-section {
+  position: relative;
+  height: 260vh;
+  margin-top: 6px;
+}
+
+.scrub-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .hero-stage {
   position: relative;
-  min-height: 760px;
-  display: flex;
+  min-height: 72vh;
+  display: grid;
+  grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
-  overflow: visible;
+  gap: 42px;
+}
+
+.hero-copy-side {
+  align-self: center;
+  max-width: 280px;
+  opacity: 0.9;
+}
+
+.hero-side-label {
+  margin-bottom: 10px;
+}
+
+.hero-side-copy {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
 }
 
 .hero-phone-wrap {
   position: relative;
-  z-index: 3;
-  width: min(100%, 760px);
-  transform-origin: center center;
-  will-change: transform;
-}
-
-.hero-phone-image {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 36px 90px rgba(0, 0, 0, 0.42));
-  user-select: none;
-  -webkit-user-drag: none;
-  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 72vh;
 }
 
 .hero-glow {
@@ -255,7 +282,7 @@ a {
   );
   filter: blur(36px);
   left: 50%;
-  top: 52%;
+  top: 50%;
   transform: translate(-50%, -50%);
 }
 
@@ -269,9 +296,84 @@ a {
     rgba(135, 220, 255, 0) 74%
   );
   filter: blur(44px);
-  left: 53%;
-  top: 45%;
+  left: 54%;
+  top: 44%;
   transform: translate(-50%, -50%);
+}
+
+.phone-composite {
+  position: relative;
+  z-index: 3;
+  width: min(100%, var(--phone-max-width));
+  filter: drop-shadow(0 36px 90px rgba(0, 0, 0, 0.42));
+}
+
+.phone-screen-window {
+  position: absolute;
+  top: var(--screen-inset-top);
+  right: var(--screen-inset-right);
+  bottom: var(--screen-inset-bottom);
+  left: var(--screen-inset-left);
+  overflow: hidden;
+  border-radius: 9.2%;
+  background: #000;
+}
+
+.hero-demo-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.video-fallback-copy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(245, 247, 251, 0.72);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  background:
+    radial-gradient(circle at center, rgba(83, 156, 255, 0.08), transparent 50%),
+    #000;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.video-fallback-copy.is-hidden {
+  opacity: 0;
+}
+
+.phone-frame-overlay {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.scrub-progress {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.scrub-progress-track {
+  width: min(420px, 58vw);
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.scrub-progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #87dcff 0%, #63a7ff 100%);
 }
 
 .glass-panel {
@@ -443,11 +545,16 @@ a {
 
 @media (max-width: 1080px) {
   .hero-stage {
-    min-height: 680px;
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .hero-copy-side {
+    max-width: 520px;
   }
 
   .hero-phone-wrap {
-    width: min(100%, 680px);
+    min-height: 58vh;
   }
 
   .contact-panel {
@@ -489,12 +596,16 @@ a {
     padding: 12px 2px 14px;
   }
 
+  .scrub-section {
+    height: 210vh;
+  }
+
   .hero-stage {
-    min-height: 520px;
+    min-height: 64vh;
   }
 
   .hero-phone-wrap {
-    width: min(100%, 560px);
+    min-height: 52vh;
   }
 
   .hero-glow-primary {
@@ -542,12 +653,16 @@ a {
     font-size: 0.88rem;
   }
 
-  .hero-stage {
-    min-height: 390px;
+  .scrub-section {
+    height: 190vh;
   }
 
-  .hero-phone-wrap {
-    width: min(100%, 420px);
+  .hero-copy-side {
+    max-width: none;
+  }
+
+  .hero-side-copy {
+    font-size: 0.95rem;
   }
 
   .hero-glow-primary {
@@ -568,5 +683,18 @@ a {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .scrub-section {
+    height: auto;
+  }
+
+  .scrub-sticky {
+    position: relative;
+    height: auto;
+  }
+
+  .scrub-progress {
+    display: none;
   }
 }
