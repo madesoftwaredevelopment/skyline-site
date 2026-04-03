@@ -590,14 +590,15 @@ a {
   .hero-stage {
     grid-template-columns: 1fr;
     gap: 22px;
+    align-content: start;
   }
 
   .hero-copy-side {
-    min-height: 280px;
+    min-height: 240px;
   }
 
   .hero-copy-stack {
-    min-height: 260px;
+    min-height: 240px;
   }
 
   .hero-message-title {
@@ -605,7 +606,22 @@ a {
   }
 
   .hero-phone-wrap {
-    min-height: 58vh;
+    min-height: auto;
+  }
+
+  .phone-composite {
+    width: min(100%, 360px);
+  }
+
+  .scrub-section {
+    height: 245vh;
+  }
+
+  .scrub-sticky {
+    height: 100svh;
+    justify-content: flex-start;
+    padding-top: 18px;
+    padding-bottom: 18px;
   }
 
   .contact-panel {
@@ -661,37 +677,66 @@ a {
   }
 
   .scrub-section {
-    height: 240vh;
+    height: 255vh;
+  }
+
+  .scrub-sticky {
+    height: 100svh;
+    justify-content: flex-start;
+    padding-top: 8px;
+    padding-bottom: 12px;
   }
 
   .hero-stage {
-    min-height: 64vh;
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-content: start;
   }
 
   .hero-copy-side {
-    min-height: 240px;
+    min-height: 190px;
+    align-items: flex-start;
   }
 
   .hero-copy-stack {
-    min-height: 220px;
+    min-height: 190px;
   }
 
   .hero-message-title {
     font-size: clamp(1.9rem, 7vw, 3rem);
+    max-width: 100%;
+  }
+
+  .hero-message-body {
+    max-width: 100%;
   }
 
   .hero-phone-wrap {
-    min-height: 52vh;
+    min-height: auto;
+    align-items: flex-start;
+  }
+
+  .phone-composite {
+    width: min(100%, 310px);
+  }
+
+  .phone-screen-window {
+    border-radius: 48px;
   }
 
   .hero-glow-primary {
-    width: 460px;
-    height: 460px;
+    width: 360px;
+    height: 360px;
   }
 
   .hero-glow-secondary {
-    width: 320px;
-    height: 320px;
+    width: 260px;
+    height: 260px;
+  }
+
+  .scrub-progress {
+    margin-top: 12px;
   }
 
   .content-grid {
@@ -735,34 +780,57 @@ a {
   }
 
   .scrub-section {
-    height: 220vh;
+    height: 235vh;
+  }
+
+  .scrub-sticky {
+    height: 100svh;
+    justify-content: flex-start;
+    padding-top: 4px;
+    padding-bottom: 10px;
+  }
+
+  .hero-stage {
+    gap: 16px;
   }
 
   .hero-copy-side {
-    min-height: 220px;
+    min-height: 170px;
   }
 
   .hero-copy-stack {
-    min-height: 210px;
+    min-height: 170px;
   }
 
   .hero-message-title {
-    font-size: clamp(1.7rem, 9vw, 2.4rem);
+    font-size: clamp(1.65rem, 9vw, 2.35rem);
   }
 
   .hero-message-body {
-    font-size: 0.98rem;
+    font-size: 0.96rem;
     max-width: 100%;
   }
 
+  .hero-phone-wrap {
+    min-height: auto;
+  }
+
+  .phone-composite {
+    width: min(100%, 270px);
+  }
+
+  .phone-screen-window {
+    border-radius: 42px;
+  }
+
   .hero-glow-primary {
-    width: 320px;
-    height: 320px;
+    width: 300px;
+    height: 300px;
   }
 
   .hero-glow-secondary {
-    width: 220px;
-    height: 220px;
+    width: 210px;
+    height: 210px;
   }
 
   .contact-email {
