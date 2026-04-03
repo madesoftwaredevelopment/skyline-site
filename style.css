@@ -153,7 +153,7 @@ a {
   border-radius: 22px;
   background:
     linear-gradient(180deg, rgba(13, 19, 30, 0.78) 0%, rgba(9, 13, 22, 0.68) 100%);
-  border: 1px solid rgba(154, 192, 255, 0.10);
+  border: 1px solid rgba(154, 192, 255, 0.1);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 8px 28px rgba(0, 0, 0, 0.22);
@@ -419,6 +419,12 @@ a {
   background: linear-gradient(90deg, #87dcff 0%, #63a7ff 100%);
 }
 
+.content-grid,
+.contact-panel {
+  position: relative;
+  z-index: 5;
+}
+
 .glass-panel {
   background: linear-gradient(
     180deg,
@@ -677,14 +683,15 @@ a {
   }
 
   .scrub-section {
-    height: 255vh;
+    height: 270vh;
+    margin-bottom: 28px;
   }
 
   .scrub-sticky {
     height: 100svh;
     justify-content: flex-start;
     padding-top: 8px;
-    padding-bottom: 12px;
+    padding-bottom: 18px;
   }
 
   .hero-stage {
@@ -741,6 +748,7 @@ a {
 
   .content-grid {
     grid-template-columns: 1fr;
+    margin-top: 38px;
   }
 
   .info-card,
@@ -780,14 +788,15 @@ a {
   }
 
   .scrub-section {
-    height: 235vh;
+    height: 250vh;
+    margin-bottom: 34px;
   }
 
   .scrub-sticky {
     height: 100svh;
     justify-content: flex-start;
     padding-top: 4px;
-    padding-bottom: 10px;
+    padding-bottom: 14px;
   }
 
   .hero-stage {
@@ -831,6 +840,10 @@ a {
   .hero-glow-secondary {
     width: 210px;
     height: 210px;
+  }
+
+  .content-grid {
+    margin-top: 42px;
   }
 
   .contact-email {
