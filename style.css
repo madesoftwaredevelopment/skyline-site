@@ -125,7 +125,6 @@ a {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
   width: fit-content;
   flex: 0 0 auto;
 }
@@ -134,23 +133,16 @@ a {
   justify-self: center;
 }
 
-.brand-logo {
-  display: block;
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
-  min-height: 22px;
-  max-width: 22px;
-  max-height: 22px;
-  object-fit: contain;
-  flex: 0 0 22px;
+.brand-wordmark {
+  justify-content: center;
 }
 
-.brand-text {
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1;
+.brand-wordmark-image {
+  display: block;
+  height: 30px;
+  width: auto;
+  max-width: 320px;
+  object-fit: contain;
 }
 
 .site-nav {
@@ -628,6 +620,11 @@ a {
     justify-self: center;
   }
 
+  .brand-wordmark-image {
+    height: 26px;
+    max-width: 260px;
+  }
+
   .site-nav {
     justify-self: center;
     width: auto;
@@ -692,6 +689,11 @@ a {
   .hero-intro h1 {
     max-width: 100%;
     font-size: clamp(2.35rem, 12vw, 4rem);
+  }
+
+  .brand-wordmark-image {
+    height: 24px;
+    max-width: 220px;
   }
 
   .site-nav {
