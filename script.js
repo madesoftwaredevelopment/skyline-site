@@ -1,42 +1,44 @@
 (() => {
-  const scrubSection = document.getElementById("scrub-section");
-  const video = document.getElementById("hero-demo-video");
-  const progressFill = document.getElementById("scrub-progress-fill");
-  const fallbackCopy = document.getElementById("video-fallback-copy");
-  const heroMessages = Array.from(document.querySelectorAll(".hero-message"));
-
-  if (!scrubSection || !video || !progressFill || !fallbackCopy || heroMessages.length === 0) {
-    console.warn("SkyLine Golf hero scrub: missing required elements.");
-    return;
-  }
-
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if (prefersReducedMotion) {
-    fallbackCopy.classList.add("is-hidden");
-    progressFill.style.width = "100%";
-    heroMessages.forEach((message) => message.classList.add("is-active"));
-  } else {
+  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+  const remap = (value, inMin, inMax, outMin, outMax) => {
+    if (inMax - inMin === 0) return outMin;
+    const normalized = (value - inMin) / (inMax - inMin);
+    return outMin + (outMax - outMin) * normalized;
+  };
+
+  const easeInOut = (t) => {
+    return t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  };
+
+  const initHeroScrub = () => {
+    const scrubSection = document.getElementById("scrub-section");
+    const video = document.getElementById("hero-demo-video");
+    const progressFill = document.getElementById("scrub-progress-fill");
+    const fallbackCopy = document.getElementById("video-fallback-copy");
+    const heroMessages = Array.from(document.querySelectorAll(".hero-message"));
+
+    if (!scrubSection || !video || !progressFill || !fallbackCopy || heroMessages.length === 0) {
+      return;
+    }
+
+    if (prefersReducedMotion) {
+      fallbackCopy.classList.add("is-hidden");
+      progressFill.style.width = "100%";
+      heroMessages.forEach((message) => message.classList.add("is-active"));
+      return;
+    }
+
     let duration = 0;
     let metadataReady = false;
     let ticking = false;
     let pendingSeek = false;
     let targetTime = 0;
     let activeMessageIndex = 0;
-
-    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-
-    const remap = (value, inMin, inMax, outMin, outMax) => {
-      if (inMax - inMin === 0) return outMin;
-      const normalized = (value - inMin) / (inMax - inMin);
-      return outMin + (outMax - outMin) * normalized;
-    };
-
-    const easeInOut = (t) => {
-      return t < 0.5
-        ? 4 * t * t * t
-        : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    };
 
     const setActiveMessage = (index) => {
       const safeIndex = clamp(index, 0, heroMessages.length - 1);
@@ -120,7 +122,6 @@
       metadataReady = duration > 0;
 
       if (!metadataReady) {
-        console.warn("SkyLine Golf hero scrub: video metadata did not produce a valid duration.");
         return;
       }
 
@@ -130,7 +131,13 @@
       requestScrollUpdate();
     };
 
+    const onPlayable = () => {
+      fallbackCopy.classList.add("is-hidden");
+    };
+
     video.addEventListener("loadedmetadata", onLoadedMetadata);
+    video.addEventListener("loadeddata", onPlayable);
+    video.addEventListener("canplay", onPlayable);
 
     video.addEventListener("seeked", () => {
       pendingSeek = false;
@@ -142,7 +149,6 @@
 
     video.addEventListener("error", () => {
       fallbackCopy.textContent = "Demo unavailable";
-      console.warn("SkyLine Golf hero scrub: video failed to load.");
     });
 
     video.muted = true;
@@ -150,11 +156,9 @@
 
     const playPromise = video.play();
     if (playPromise && typeof playPromise.then === "function") {
-      playPromise
-        .then(() => video.pause())
-        .catch(() => {
-          /* Some browsers block this. Fine. */
-        });
+      playPromise.then(() => video.pause()).catch(() => {
+        /* Some browsers block this. Fine. */
+      });
     }
 
     heroMessages[0].classList.add("is-active");
@@ -162,13 +166,17 @@
 
     window.addEventListener("scroll", requestScrollUpdate, { passive: true });
     window.addEventListener("resize", requestScrollUpdate);
-  }
+  };
 
-  const waitlistForm = document.getElementById("waitlist-form");
-  const waitlistEmail = document.getElementById("waitlist-email");
-  const waitlistStatus = document.getElementById("waitlist-status");
+  const initWaitlistForm = () => {
+    const waitlistForm = document.getElementById("waitlist-form");
+    const waitlistEmail = document.getElementById("waitlist-email");
+    const waitlistStatus = document.getElementById("waitlist-status");
 
-  if (waitlistForm && waitlistEmail && waitlistStatus) {
+    if (!waitlistForm || !waitlistEmail || !waitlistStatus) {
+      return;
+    }
+
     const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
     waitlistForm.addEventListener("submit", (event) => {
@@ -191,5 +199,8 @@
 
       window.location.href = `mailto:contact@skylinegolf.app?subject=${subject}&body=${body}`;
     });
-  }
+  };
+
+  initHeroScrub();
+  initWaitlistForm();
 })();
