@@ -16,158 +16,180 @@
     fallbackCopy.classList.add("is-hidden");
     progressFill.style.width = "100%";
     heroMessages.forEach((message) => message.classList.add("is-active"));
-    return;
-  }
+  } else {
+    let duration = 0;
+    let metadataReady = false;
+    let ticking = false;
+    let pendingSeek = false;
+    let targetTime = 0;
+    let activeMessageIndex = 0;
 
-  let duration = 0;
-  let metadataReady = false;
-  let ticking = false;
-  let pendingSeek = false;
-  let targetTime = 0;
-  let activeMessageIndex = 0;
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const remap = (value, inMin, inMax, outMin, outMax) => {
+      if (inMax - inMin === 0) return outMin;
+      const normalized = (value - inMin) / (inMax - inMin);
+      return outMin + (outMax - outMin) * normalized;
+    };
 
-  const remap = (value, inMin, inMax, outMin, outMax) => {
-    if (inMax - inMin === 0) return outMin;
-    const normalized = (value - inMin) / (inMax - inMin);
-    return outMin + (outMax - outMin) * normalized;
-  };
+    const easeInOut = (t) => {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
 
-  const easeInOut = (t) => {
-    return t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  };
+    const setActiveMessage = (index) => {
+      const safeIndex = clamp(index, 0, heroMessages.length - 1);
+      if (safeIndex === activeMessageIndex) return;
 
-  const setActiveMessage = (index) => {
-    const safeIndex = clamp(index, 0, heroMessages.length - 1);
-    if (safeIndex === activeMessageIndex) return;
+      heroMessages[activeMessageIndex]?.classList.remove("is-active");
+      heroMessages[safeIndex]?.classList.add("is-active");
+      activeMessageIndex = safeIndex;
+    };
 
-    heroMessages[activeMessageIndex]?.classList.remove("is-active");
-    heroMessages[safeIndex]?.classList.add("is-active");
-    activeMessageIndex = safeIndex;
-  };
+    const safeSeek = (time) => {
+      if (!metadataReady || !Number.isFinite(duration) || duration <= 0) {
+        return;
+      }
 
-  const safeSeek = (time) => {
-    if (!metadataReady || !Number.isFinite(duration) || duration <= 0) {
-      return;
-    }
+      const clampedTime = clamp(time, 0, Math.max(duration - 0.001, 0));
 
-    const clampedTime = clamp(time, 0, Math.max(duration - 0.001, 0));
+      if (Math.abs(video.currentTime - clampedTime) < 0.016) {
+        return;
+      }
 
-    if (Math.abs(video.currentTime - clampedTime) < 0.016) {
-      return;
-    }
+      if (pendingSeek) {
+        targetTime = clampedTime;
+        return;
+      }
 
-    if (pendingSeek) {
-      targetTime = clampedTime;
-      return;
-    }
+      try {
+        pendingSeek = true;
+        video.currentTime = clampedTime;
+      } catch (error) {
+        pendingSeek = false;
+        console.warn("SkyLine Golf hero scrub: seek failed.", error);
+      }
+    };
 
-    try {
-      pendingSeek = true;
-      video.currentTime = clampedTime;
-    } catch (error) {
+    const updateFromScroll = () => {
+      ticking = false;
+
+      const rect = scrubSection.getBoundingClientRect();
+      const totalScrollable = Math.max(scrubSection.offsetHeight - window.innerHeight, 1);
+      const scrolled = clamp(-rect.top, 0, totalScrollable);
+      const rawProgress = clamp(scrolled / totalScrollable, 0, 1);
+
+      const scrubStart = 0.06;
+      const scrubEnd = 0.88;
+
+      let shapedProgress = 0;
+
+      if (rawProgress <= scrubStart) {
+        shapedProgress = 0;
+      } else if (rawProgress >= scrubEnd) {
+        shapedProgress = 1;
+      } else {
+        const inner = remap(rawProgress, scrubStart, scrubEnd, 0, 1);
+        shapedProgress = easeInOut(inner);
+      }
+
+      if (metadataReady && duration > 0) {
+        targetTime = shapedProgress * duration;
+        safeSeek(targetTime);
+      }
+
+      progressFill.style.width = `${(shapedProgress * 100).toFixed(2)}%`;
+
+      const messageZoneProgress = clamp(remap(rawProgress, 0.02, 0.92, 0, 1), 0, 1);
+      const messageIndex = Math.min(
+        heroMessages.length - 1,
+        Math.floor(messageZoneProgress * heroMessages.length)
+      );
+      setActiveMessage(messageIndex);
+    };
+
+    const requestScrollUpdate = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(updateFromScroll);
+    };
+
+    const onLoadedMetadata = () => {
+      duration = Number.isFinite(video.duration) ? video.duration : 0;
+      metadataReady = duration > 0;
+
+      if (!metadataReady) {
+        console.warn("SkyLine Golf hero scrub: video metadata did not produce a valid duration.");
+        return;
+      }
+
+      fallbackCopy.classList.add("is-hidden");
+      video.pause();
+      video.muted = true;
+      requestScrollUpdate();
+    };
+
+    video.addEventListener("loadedmetadata", onLoadedMetadata);
+
+    video.addEventListener("seeked", () => {
       pendingSeek = false;
-      console.warn("SkyLine Golf hero scrub: seek failed.", error);
-    }
-  };
 
-  const updateFromScroll = () => {
-    ticking = false;
+      if (Math.abs(video.currentTime - targetTime) > 0.033) {
+        safeSeek(targetTime);
+      }
+    });
 
-    const rect = scrubSection.getBoundingClientRect();
-    const totalScrollable = Math.max(scrubSection.offsetHeight - window.innerHeight, 1);
-    const scrolled = clamp(-rect.top, 0, totalScrollable);
-    const rawProgress = clamp(scrolled / totalScrollable, 0, 1);
+    video.addEventListener("error", () => {
+      fallbackCopy.textContent = "Demo unavailable";
+      console.warn("SkyLine Golf hero scrub: video failed to load.");
+    });
 
-    /*
-      Shaped progress:
-      - first 6% holds near start
-      - middle 82% scrubs
-      - last 12% settles near end
-    */
-    const scrubStart = 0.06;
-    const scrubEnd = 0.88;
-
-    let shapedProgress = 0;
-
-    if (rawProgress <= scrubStart) {
-      shapedProgress = 0;
-    } else if (rawProgress >= scrubEnd) {
-      shapedProgress = 1;
-    } else {
-      const inner = remap(rawProgress, scrubStart, scrubEnd, 0, 1);
-      shapedProgress = easeInOut(inner);
-    }
-
-    if (metadataReady && duration > 0) {
-      targetTime = shapedProgress * duration;
-      safeSeek(targetTime);
-    }
-
-    progressFill.style.width = `${(shapedProgress * 100).toFixed(2)}%`;
-
-    const messageZoneProgress = clamp(remap(rawProgress, 0.02, 0.92, 0, 1), 0, 1);
-    const messageIndex = Math.min(
-      heroMessages.length - 1,
-      Math.floor(messageZoneProgress * heroMessages.length)
-    );
-    setActiveMessage(messageIndex);
-  };
-
-  const requestScrollUpdate = () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(updateFromScroll);
-  };
-
-  const onLoadedMetadata = () => {
-    duration = Number.isFinite(video.duration) ? video.duration : 0;
-    metadataReady = duration > 0;
-
-    if (!metadataReady) {
-      console.warn("SkyLine Golf hero scrub: video metadata did not produce a valid duration.");
-      return;
-    }
-
-    fallbackCopy.classList.add("is-hidden");
-    video.pause();
     video.muted = true;
-    requestScrollUpdate();
-  };
+    video.playsInline = true;
 
-  video.addEventListener("loadedmetadata", onLoadedMetadata);
-
-  video.addEventListener("seeked", () => {
-    pendingSeek = false;
-
-    if (Math.abs(video.currentTime - targetTime) > 0.033) {
-      safeSeek(targetTime);
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      playPromise
+        .then(() => video.pause())
+        .catch(() => {
+          /* Some browsers block this. Fine. */
+        });
     }
-  });
 
-  video.addEventListener("error", () => {
-    fallbackCopy.textContent = "Demo unavailable";
-    console.warn("SkyLine Golf hero scrub: video failed to load.");
-  });
+    heroMessages[0].classList.add("is-active");
+    requestScrollUpdate();
 
-  video.muted = true;
-  video.playsInline = true;
-
-  const playPromise = video.play();
-  if (playPromise && typeof playPromise.then === "function") {
-    playPromise
-      .then(() => video.pause())
-      .catch(() => {
-        /* Some browsers block this. Fine. */
-      });
+    window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+    window.addEventListener("resize", requestScrollUpdate);
   }
 
-  heroMessages[0].classList.add("is-active");
-  requestScrollUpdate();
+  const waitlistForm = document.getElementById("waitlist-form");
+  const waitlistEmail = document.getElementById("waitlist-email");
+  const waitlistStatus = document.getElementById("waitlist-status");
 
-  window.addEventListener("scroll", requestScrollUpdate, { passive: true });
-  window.addEventListener("resize", requestScrollUpdate);
+  if (waitlistForm && waitlistEmail && waitlistStatus) {
+    const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+    waitlistForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const email = waitlistEmail.value.trim();
+
+      if (!isValidEmail(email)) {
+        waitlistStatus.textContent = "Please enter a valid email address.";
+        waitlistEmail.focus();
+        return;
+      }
+
+      waitlistStatus.textContent = "Opening your email app…";
+
+      const subject = encodeURIComponent("SkyLine Golf Waitlist");
+      const body = encodeURIComponent(
+        `Please add me to the SkyLine Golf waitlist.\n\nEmail: ${email}`
+      );
+
+      window.location.href = `mailto:contact@skylinegolf.app?subject=${subject}&body=${body}`;
+    });
+  }
 })();
